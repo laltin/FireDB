@@ -72,13 +72,18 @@ class FireDB {
 		return $obj;
 	}
 
-	private function generateRow($pathstr, $value) {
+	private function generateInsertRow($pathstr, $value) {
 		$path = $this->parsePath($pathstr);
 		$depth = count($path);
 
-		$insert = [];
-		for ($i = 0; $i < $depth; $i++) {
-			$insert["path$i"] = $path[$i];
+		$insert = [
+			'bool_value' => null,
+			'int_value' => null,
+			'varchar_value' => null,
+			'text_value' => null,
+		];
+		for ($i = 0; $i < self::MAX_DEPTH; $i++) {
+			$insert["path$i"] = $i < $depth ? $path[$i] : null;
 		}
 
 		// get value type
@@ -92,13 +97,24 @@ class FireDB {
 			$type = strlen($value) < self::MAX_VARCHAR_LEN ? 'varchar' : 'text';
 		}
 		else {
-			return null;
+			throw new Exception("Unknown FireDB value type.");
 		}
 
 		$insert["type"] = $type;
 		$insert[$type . "_value"] = $value;
 
 		return $insert;
+	}
+
+	private function generateObjectInsert($pathstr, $value, &$output) {
+		foreach ($value as $key => $child_value) {
+			if (is_array($child_value)) {
+				$this->generateObjectInsert("$pathstr/$key", $child_value, $output);
+			}
+			else {
+				$output[] = $this->generateInsertRow("$pathstr/$key", $child_value);
+			}
+		}
 	}
 
 	public function set($pathstr, $value) {
@@ -112,13 +128,11 @@ class FireDB {
 
 		// get value type
 		if (is_array($value)) {
-			// TODO
-		}
-		else if ($insert = $this->generateRow($pathstr, $value)) {
-			// nothing to do, just insert the object
+			$insert = [];
+			$this->generateObjectInsert($pathstr, $value, $insert);
 		}
 		else {
-			throw new Exception("Unknown FireDB value type.");
+			$insert = $this->generateInsertRow($pathstr, $value);
 		}
 
 		$this->db->delete($this->table, $where);
