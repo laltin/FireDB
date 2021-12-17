@@ -72,7 +72,7 @@ class FireDB {
 		return $obj;
 	}
 
-	private function generateInsertRow($pathstr, $value) {
+	private function generateRowInsert($pathstr, $value) {
 		$path = $this->parsePath($pathstr);
 		$depth = count($path);
 
@@ -112,7 +112,7 @@ class FireDB {
 				$this->generateObjectInsert("$pathstr/$key", $child_value, $output);
 			}
 			else {
-				$output[] = $this->generateInsertRow("$pathstr/$key", $child_value);
+				$output[] = $this->generateRowInsert("$pathstr/$key", $child_value);
 			}
 		}
 	}
@@ -126,13 +126,12 @@ class FireDB {
 			$where["path$i"] = $path[$i];
 		}
 
-		// get value type
 		if (is_array($value)) {
 			$insert = [];
 			$this->generateObjectInsert($pathstr, $value, $insert);
 		}
 		else {
-			$insert = $this->generateInsertRow($pathstr, $value);
+			$insert = $this->generateRowInsert($pathstr, $value);
 		}
 
 		$this->db->delete($this->table, $where);
