@@ -55,7 +55,10 @@ class FireDB {
 		}
 
 		$obj = [];
-		$this->db->select($this->table, "*", $where, function($row) use (&$obj, $depth) {
+		$null = true;
+		$this->db->select($this->table, "*", $where, function($row) use (&$obj, &$null, $depth) {
+			$null = false;
+			
 			$child = &$obj;
 
 			for ($i = $depth; isset($row["path$i"]); $i++) {
@@ -80,7 +83,7 @@ class FireDB {
 				$child = (int)$child;
 			}
 		});
-		return $obj;
+		return $null ? null : $obj;
 	}
 
 	private function generateRowInsert($pathstr, $value) {
@@ -147,5 +150,18 @@ class FireDB {
 
 		$this->db->delete($this->table, $where);
 		$this->db->insert($this->table, $insert);
+	}
+
+	public function now() {
+		return (int)(microtime(true) * 1000);
+	}
+
+	public function generateKey() {
+		$now = $this->now();
+
+		// TODO: actual key generation
+		$key = $now;
+
+		return $key;
 	}
 }
