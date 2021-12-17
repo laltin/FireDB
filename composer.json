@@ -1,0 +1,8 @@
+{
+	"name": "laltin/fire-db",
+	"description": "Firebase like JSON database without real-time capabilities",
+	"license": "MIT",
+	"autoload": {
+		"classmap": ["src/"]
+	}
+}
