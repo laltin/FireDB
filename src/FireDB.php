@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . '/Medoo.php');
+require_once(__DIR__ . '/Medoo/Medoo.php');
 
 class FireDB {
 	private const MAX_DEPTH = 10;
