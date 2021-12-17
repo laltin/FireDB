@@ -8,6 +8,17 @@ class FireDB {
 	private $db;
 	private $table;
 
+	/**
+	 *	```
+	 *	$db = new FireDB([
+	 *	    'type' => 'mysql',
+ 	 *	    'host' => 'localhost',
+	 *	    'username' => 'root',
+	 *	    'password' => '',
+	 *	    'database' => 'project-db'
+	 *	], 'json');
+	 *	```
+	 */
 	public function __construct($medoo_options, $table) {
 		$this->db = new Medoo\Medoo($medoo_options);
 		$this->table = $table;
