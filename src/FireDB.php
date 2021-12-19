@@ -54,20 +54,20 @@ class FireDB {
 			$where["path$i"] = $path[$i];
 		}
 
-		$obj = [];
-		$null = true;
-		$this->db->select($this->table, "*", $where, function($row) use (&$obj, &$null, $depth) {
-			$null = false;
-			
+		// reconstruct object
+		$obj = null;
+
+		$this->db->select($this->table, "*", $where, function($row) use (&$obj, $depth) {
 			$child = &$obj;
 
 			for ($i = $depth; isset($row["path$i"]); $i++) {
 				$key = $row["path$i"];
 
-				if (!isset($child[$key])) {
-					$child[$key] = [];
+				if (!isset($child)) {
+					$child = [
+						$key => null
+					];
 				}
-
 				$child = &$child[$key];
 			}
 
@@ -75,15 +75,16 @@ class FireDB {
 			$child = $row[$type . "_value"];
 
 			if ($type == 'bool') {
-				// bool is not always saved as bool in the database, convert to bool
+				// convert value to bool
 				$child = $child ? true : false;
 			}
 			else if ($type == 'int') {
-				// for some reason int types return as string not int, convert to int
+				// convert value to int
 				$child = (int)$child;
 			}
 		});
-		return $null ? null : $obj;
+
+		return $obj;
 	}
 
 	private function generateRowInsert($pathstr, $value) {
