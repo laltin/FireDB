@@ -123,7 +123,10 @@ class FireDB {
 
 	private function generateObjectInsert($pathstr, $value, &$output) {
 		foreach ($value as $key => $child_value) {
-			if (is_array($child_value)) {
+			if ($child_value === null) {
+				// null value, nothing to generate
+			}
+			else if (is_array($child_value)) {
 				$this->generateObjectInsert("$pathstr/$key", $child_value, $output);
 			}
 			else {
