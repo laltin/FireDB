@@ -112,7 +112,7 @@ class FireDB {
 			$type = strlen($value) < self::MAX_VARCHAR_LEN ? 'varchar' : 'text';
 		}
 		else {
-			throw new Exception("Unknown FireDB value type.");
+			throw new Exception("Unknown FireDB value type");
 		}
 
 		$insert["type"] = $type;
@@ -141,7 +141,10 @@ class FireDB {
 			$where["path$i"] = $path[$i];
 		}
 
-		if (is_array($value)) {
+		if ($value === null) {
+			// null value, delete but don't insert anything
+		}
+		else if (is_array($value)) {
 			$insert = [];
 			$this->generateObjectInsert($pathstr, $value, $insert);
 		}
@@ -150,7 +153,9 @@ class FireDB {
 		}
 
 		$this->db->delete($this->table, $where);
-		$this->db->insert($this->table, $insert);
+		if (isset($insert)) {
+			$this->db->insert($this->table, $insert);
+		}
 	}
 
 	public function now() {
