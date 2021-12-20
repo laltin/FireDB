@@ -45,7 +45,7 @@ class FireDB {
         return $path;
 	}
 
-	public function get($pathstr) {
+	public function get($pathstr, $range = null) {
 		$path = $this->parsePath($pathstr);
 		$depth = count($path);
 
@@ -56,8 +56,7 @@ class FireDB {
 
 		// reconstruct object
 		$obj = null;
-
-		$this->db->select($this->table, "*", $where, function($row) use (&$obj, $depth) {
+		$reconstructor = function($row) use (&$obj, $depth) {
 			$child = &$obj;
 
 			for ($i = $depth; isset($row["path$i"]); $i++) {
@@ -82,7 +81,15 @@ class FireDB {
 			else {
 				$child = $row[$type . "_value"];
 			}
-		});
+		};
+
+		if (!isset($range)) {
+			// simple query, return full object
+			$this->db->select($this->table, "*", $where, $reconstructor);
+		}
+		else {
+			// range query, return children that match range
+		}
 
 		return $obj;
 	}
