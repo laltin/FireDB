@@ -9,15 +9,15 @@ class FireDB {
 	private $table;
 
 	/**
-	 *	```
-	 *	$db = new FireDB([
-	 *	    'type' => 'mysql',
- 	 *	    'host' => 'localhost',
-	 *	    'username' => 'root',
-	 *	    'password' => '',
-	 *	    'database' => 'project-db'
-	 *	], 'json');
-	 *	```
+	 * ```
+	 * $db = new FireDB([
+	 *     'type' => 'mysql',
+ 	 *     'host' => 'localhost',
+	 *     'username' => 'root',
+	 *     'password' => '',
+	 *     'database' => 'project-db'
+	 * ], 'json');
+	 * ```
 	 */
 	public function __construct($medoo_options, $table) {
 		$this->db = new Medoo\Medoo($medoo_options);
@@ -72,15 +72,15 @@ class FireDB {
 			}
 
 			$type = $row["type"];
-			$child = $row[$type . "_value"];
-
 			if ($type == 'bool') {
-				// convert value to bool
-				$child = $child ? true : false;
+				$child = (bool)$row["int_value"];
 			}
 			else if ($type == 'int') {
 				// convert value to int
-				$child = (int)$child;
+				$child = (int)$row["int_value"];
+			}
+			else {
+				$child = $row[$type . "_value"];
 			}
 		});
 
@@ -92,7 +92,6 @@ class FireDB {
 		$depth = count($path);
 
 		$insert = [
-			'bool_value' => null,
 			'int_value' => null,
 			'varchar_value' => null,
 			'text_value' => null,
@@ -101,36 +100,38 @@ class FireDB {
 			$insert["path$i"] = $i < $depth ? $path[$i] : null;
 		}
 
-		// get value type
+		// get value type and populate columns
 		if (is_bool($value)) {
-			$type = "bool";
+			$insert["type"] = 'bool';
+			$insert["int_value"] = (int)$value;
 		}
 		else if (is_int($value)) {
-			$type = "int";
+			$insert["type"] = 'int';
+			$insert["int_value"] = $value;
 		}
 		else if (is_string($value)) {
 			$type = strlen($value) < self::MAX_VARCHAR_LEN ? 'varchar' : 'text';
+
+			$insert["type"] = $type;
+			$insert[$type . "_value"] = $value;
 		}
 		else {
 			throw new Exception("Unknown FireDB value type");
 		}
 
-		$insert["type"] = $type;
-		$insert[$type . "_value"] = $value;
-
 		return $insert;
 	}
 
-	private function generateObjectInsert($pathstr, $value, &$output) {
-		foreach ($value as $key => $child_value) {
-			if ($child_value === null) {
+	private function generateObjectInsert($pathstr, $obj, &$output) {
+		foreach ($obj as $key => $value) {
+			if ($value === null) {
 				// null value, nothing to generate
 			}
-			else if (is_array($child_value)) {
-				$this->generateObjectInsert("$pathstr/$key", $child_value, $output);
+			else if (is_array($value)) {
+				$this->generateObjectInsert("$pathstr/$key", $value, $output);
 			}
 			else {
-				$output[] = $this->generateRowInsert("$pathstr/$key", $child_value);
+				$output[] = $this->generateRowInsert("$pathstr/$key", $value);
 			}
 		}
 	}
@@ -144,6 +145,7 @@ class FireDB {
 			$where["path$i"] = $path[$i];
 		}
 
+		// generate insert commands
 		if ($value === null) {
 			// null value, delete but don't insert anything
 		}

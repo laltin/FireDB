@@ -9,11 +9,10 @@ CREATE TABLE `json` (
   `path7` varchar(32) DEFAULT NULL,
   `path8` varchar(32) DEFAULT NULL,
   `path9` varchar(32) DEFAULT NULL,
-  `type` varchar(15) NOT NULL,
-  `bool_value` tinyint(1) DEFAULT NULL,
-  `int_value` bigint(20) DEFAULT NULL,
+  `type`  varchar(10) NOT NULL,
+  `int_value`     bigint(20)   DEFAULT NULL,
   `varchar_value` varchar(255) DEFAULT NULL,
-  `text_value` text DEFAULT NULL
+  `text_value`    text         DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- indexes
