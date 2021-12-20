@@ -89,6 +89,45 @@ class FireDB {
 		}
 		else {
 			// range query, return children that match range
+			if (count($range) != 1) {
+				throw new Exception("FireDB range queries work only with one property");
+			}
+
+			$ids_col = "path$depth"; // the column on which ids for children are searched
+			$index_on = array_key_first($range); // property on which range condition is applied
+			$inputs = [];
+
+			$where_range = [];
+			if (isset($range[$index_on]['start'])) {
+				$where_range[] = '<int_value> >= :start';
+				$inputs['start'] = $range[$index_on]['start'];
+			}
+			if (isset($range[$index_on]['end'])) {
+				$where_range[] = '<int_value> <= :end';
+				$inputs['end'] = $range[$index_on]['end'];
+			}
+			if (count($where_range) == 0) {
+				throw new Exception("No range given for FireDB range query");
+			}
+			$where_range = join(' AND ', $where_range);
+
+			$inputs['index_hash'] = $this->getIndexHash([...$path, $ids_col, $index_on]);
+
+			$where_path = [];
+			for ($i = 0; $i < $depth; $i++) {
+				$where_path[] = "<path$i>=:path$i";
+				$inputs["path$i"] = $path[$i];
+			}
+			$where_path = join(' AND ', $where_path);
+
+			$table = $this->table;
+			$query = "SELECT <$ids_col> FROM <$table> WHERE <index_hash>=:index_hash AND $where_range";
+			$query = "SELECT * FROM <$table> WHERE $where_path AND <$ids_col> IN ($query)";
+			$query = $this->db->query($query, $inputs);
+
+			while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+				$reconstructor($row);
+			}
 		}
 
 		return $obj;
