@@ -87,6 +87,16 @@ class FireDB {
 		return $obj;
 	}
 
+	private function getIndexHash($path) {
+		if (count($path) <= 2) {
+			return null;
+		}
+
+		$index_root = join('/', array_slice($path, 0, -2));
+		$index_on = end($path);
+		return md5("$index_root:$index_on");
+	}
+
 	private function generateRowInsert($pathstr, $value) {
 		$path = $this->parsePath($pathstr);
 		$depth = count($path);
@@ -95,6 +105,7 @@ class FireDB {
 			'int_value' => null,
 			'varchar_value' => null,
 			'text_value' => null,
+			'index_hash' => null,
 		];
 		for ($i = 0; $i < self::MAX_DEPTH; $i++) {
 			$insert["path$i"] = $i < $depth ? $path[$i] : null;
@@ -104,10 +115,14 @@ class FireDB {
 		if (is_bool($value)) {
 			$insert["type"] = 'bool';
 			$insert["int_value"] = (int)$value;
+
+			$insert["index_hash"] = $this->getIndexHash($path);
 		}
 		else if (is_int($value)) {
 			$insert["type"] = 'int';
 			$insert["int_value"] = $value;
+
+			$insert["index_hash"] = $this->getIndexHash($path);
 		}
 		else if (is_string($value)) {
 			$type = strlen($value) < self::MAX_VARCHAR_LEN ? 'varchar' : 'text';
