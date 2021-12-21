@@ -18,6 +18,6 @@ CREATE TABLE `json` (
 
 -- indexes
 ALTER TABLE `json`
-  ADD UNIQUE KEY `path` (`path0`,`path1`,`path2`,`path3`,`path4`,`path5`,`path6`,`path7`,`path8`,`path9`) USING BTREE;
+  ADD UNIQUE KEY `path` (`path0`,`path1`,`path2`,`path3`,`path4`,`path5`,`path6`,`path7`,`path8`,`path9`) USING BTREE,
   ADD KEY `range_index` (`index_hash`,`int_value`);
 COMMIT;
