@@ -228,11 +228,44 @@ class FireDB {
 		return (int)(microtime(true) * 1000);
 	}
 
-	public function generateKey() {
-		$now = $this->now();
+	private const KEY_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
 
-		// TODO: actual key generation
-		$key = $now;
+	public function generateKey() {
+		static $lastTime = null;
+		static $randBased = null;
+
+		$now = $this->now();
+		$duplicateTime = ($now == $lastTime);
+		$lastTime = $now;
+
+		$timeBased = [];
+		for ($i = 0; $i < 8; $i++) {
+			$timeBased[] = self::KEY_CHARS[ $now % 64 ];
+			$now = (int)($now / 64);
+		}
+		// reverse, so that string sorted keys are also ordered in time
+		$timeBased = array_reverse($timeBased);
+
+		if (!$duplicateTime) {
+			$randBased = [];
+			for ($i=0; $i < 12; $i++) {
+				$randBased[] = rand(0, 63);
+			}
+		}
+		else {
+			// time hasn't changed since last key generation (ms resolution)
+			// use same random number but increment by one. this ensures that
+			// multiple calls to generateKey return sorted keys
+			for ($i = 11; $i >= 0 && $randBased[$i] == 63; $i--) {
+		        $randBased[$i] = 0;
+	      	}
+			$randBased[$i] += 1;
+		}
+
+		$key = join('', $timeBased);
+		for ($i = 0; $i < 12; $i++) {
+			$key = $key . self::KEY_CHARS[ $randBased[$i] ];
+		}
 
 		return $key;
 	}
