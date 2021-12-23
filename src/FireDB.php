@@ -49,11 +49,6 @@ class FireDB {
 		$path = $this->parsePath($pathstr);
 		$depth = count($path);
 
-		$where = [];
-		for ($i = 0; $i < $depth; $i++) {
-			$where["path$i"] = $path[$i];
-		}
-
 		// reconstruct object
 		$obj = null;
 		$reconstructor = function($row) use (&$obj, $depth) {
@@ -85,6 +80,11 @@ class FireDB {
 
 		if (!isset($range)) {
 			// simple query, return full object
+			$where = [];
+			for ($i = 0; $i < $depth; $i++) {
+				$where["path$i"] = $path[$i];
+			}
+
 			$this->db->select($this->table, "*", $where, $reconstructor);
 		}
 		else {
