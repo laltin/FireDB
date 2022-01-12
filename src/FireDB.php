@@ -9,7 +9,6 @@ class FireDB {
 	private $table;
 
 	/**
-	 * ```
 	 * $db = new FireDB([
 	 *     'type' => 'mysql',
  	 *     'host' => 'localhost',
@@ -17,7 +16,6 @@ class FireDB {
 	 *     'password' => '',
 	 *     'database' => 'project-db'
 	 * ], 'json');
-	 * ```
 	 */
 	public function __construct($medoo_options, $table) {
 		$this->db = new Medoo\Medoo($medoo_options);
@@ -115,7 +113,7 @@ class FireDB {
 
 			$where_path = [];
 			for ($i = 0; $i < $depth; $i++) {
-				$where_path[] = "<path$i>=:path$i";
+				$where_path[] = "<path$i> = :path$i";
 				$inputs["path$i"] = $path[$i];
 			}
 			$where_path = join(' AND ', $where_path);
