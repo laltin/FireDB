@@ -2,8 +2,8 @@
 require_once(__DIR__ . '/Medoo/Medoo.php');
 
 class FireDB {
-	private const MAX_DEPTH = 10;
-	private const MAX_VARCHAR_LEN = 255;
+	private MAX_DEPTH = 10;
+	private MAX_VARCHAR_LEN = 255;
 
 	private $db;
 	private $table;
@@ -226,7 +226,7 @@ class FireDB {
 		return (int)(microtime(true) * 1000);
 	}
 
-	private const KEY_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+	private KEY_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
 
 	public function generateKey() {
 		static $lastTime = null;
